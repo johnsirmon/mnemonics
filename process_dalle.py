@@ -34,10 +34,14 @@ def process_images():
             for image_file in image_files:
                 match = re.match(r".*DALL·E (\d{4}-\d{2}-\d{2} \d{2}\.\d{2}\.\d{2}) - (.*)\.png", image_file)
                 if match:
+                    # extract generated_by using the first characters up to the first "-"" 
+                    #before the date in the example image name "DALL·E 2023-12-16 15.36.18 - Create an image.png" generated_by would be "DALL·E"
+                    generated_by = image_file.split("-")[0].strip()
+                    # extract date_generated using the regex match in example "DALL·E 2023-12-16 15.36.18 - Create an image.png" date_generated would be "2023-12-16 15.36.18"
                     date_generated = datetime.strptime(match.group(1), "%Y-%m-%d %H.%M.%S")
+                    # extract llm_prompt using the regex match in example "DALL·E 2023-12-16 15.36.18 - Create an image.png" llm_prompt would be "Create an image"
                     llm_prompt = match.group(2)
-                    generated_by = llm_prompt[:6]
-
+                    
                     # Storing extracted data as a csv file to my prompts folder 
                         
                     with open("./prompts/extracted_data.csv", "a") as f:
