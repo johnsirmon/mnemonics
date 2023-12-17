@@ -1,6 +1,7 @@
 import os
 import re
 from datetime import datetime
+import re
 
 def process_images():
     """
@@ -25,21 +26,28 @@ def process_images():
     extracted_data = []
 
     for image_file in image_files:
-        # Regular expression to parse the filename
-        match = re.match(r"DALL·E (\d{4}-\d{2}-\d{2} \d{2}.\d{2}.\d{2}) - (.+)\.png", image_file)
-        if match:
-            date_generated = datetime.strptime(match.group(1), "%Y-%m-%d %H.%M.%S")
-            llm_prompt = match.group(2)
 
-            # Extracting first 6 characters for 'generated_by'
-            generated_by = llm_prompt[:6]
+# take this format "images\DALL·E 2023-12-16 15.36.18 - Create an image of a futuristic cloning machine in a cozy living room. The machine is duplicating a small, detailed model of a server, symbolizing the.png"
+# and extract the generated_by "DALL·E" and date_generated "2023-12-16 15.36.18" and llm_prompt "Create an image of a futuristic cloning machine in a cozy living room. The machine is duplicating a small, detailed model of a server, symbolizing the"
+            # ...
 
-            # Storing extracted data
-            extracted_data.append({
-                "generated_by": generated_by,
-                "date_generated": date_generated,
-                "llm_prompt": llm_prompt
-            })
+            for image_file in image_files:
+                match = re.match(r".*DALL·E (\d{4}-\d{2}-\d{2} \d{2}\.\d{2}\.\d{2}) - (.*)\.png", image_file)
+                if match:
+                    date_generated = datetime.strptime(match.group(1), "%Y-%m-%d %H.%M.%S")
+                    llm_prompt = match.group(2)
+                    generated_by = llm_prompt[:6]
+
+                    # Storing extracted data as a csv file to my prompts folder 
+                        
+                    with open("./prompts/extracted_data.csv", "a") as f:
+                        f.write(f"{generated_by},{date_generated},{llm_prompt}\n")
+
+                    extracted_data.append({
+                        "generated_by": generated_by,
+                        "date_generated": date_generated,
+                        "llm_prompt": llm_prompt
+                    })
 
             # Generating a new, shorter filename
             new_file_name = f"{generated_by}_{date_generated.strftime('%Y%m%d%H%M%S')}.png"
